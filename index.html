@@ -1,0 +1,78 @@
+<html>
+    <head>
+        <title>Face App</title>
+        <style>
+        #overlay, .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            }
+        </style>
+    </head>
+    <body>
+        <img src="img/mhm.JPG" id="refimg"  />
+        <canvas id="reflay" class="overlay"></canvas>
+
+        <script src="js/jquery-2.1.1.min.js"></script>
+        <script src="js/face-api.js"></script>
+        <script>
+            $(document).ready(function(){
+                
+                async function face(){
+                    
+                    const MODEL_URL = '/models'
+
+                    await faceapi.loadSsdMobilenetv1Model(MODEL_URL)
+                    await faceapi.loadFaceLandmarkModel(MODEL_URL)
+                    await faceapi.loadFaceRecognitionModel(MODEL_URL)
+
+                    const img= document.getElementById('refimg')
+                    let fullFaceDescriptions = await faceapi.detectAllFaces(img).withFaceLandmarks().withFaceDescriptors()
+                    const canvas = $('#reflay').get(0)
+                    faceapi.matchDimensions(canvas, img)
+
+                    const fullFaceDescription = faceapi.resizeResults(fullFaceDescriptions, img)
+                    faceapi.draw.drawDetections(canvas, fullFaceDescriptions)
+                    faceapi.draw.drawFaceLandmarks(canvas, fullFaceDescriptions)
+
+                    
+                    const labels = ['prof', 'rio', 'tokyo', 'berlin', 'nairobi']
+
+                    const labeledFaceDescriptors = await Promise.all(
+                        labels.map(async label => {
+                            // fetch image data from urls and convert blob to HTMLImage element
+                            const imgUrl = `img/${label}.jpg`
+                            const img = await faceapi.fetchImage(imgUrl)
+                            
+                            // detect the face with the highest score in the image and compute it's landmarks and face descriptor
+                            const fullFaceDescription = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor()
+                            
+                            if (!fullFaceDescription) {
+                            throw new Error(`no faces detected for ${label}`)
+                            }
+                            
+                            const faceDescriptors = [fullFaceDescription.descriptor]
+                            return new faceapi.LabeledFaceDescriptors(label, faceDescriptors)
+                        })
+                    );
+
+                    const maxDescriptorDistance = 0.6
+                    const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, maxDescriptorDistance)
+
+                    const results = fullFaceDescriptions.map(fd => faceMatcher.findBestMatch(fd.descriptor))
+
+                    results.forEach((bestMatch, i) => {
+                        const box = fullFaceDescriptions[i].detection.box
+                        const text = bestMatch.toString()
+                        const drawBox = new faceapi.draw.DrawBox(box, { label: text })
+                        drawBox.draw(canvas)
+                    })
+
+                    console.log(img);
+                }
+                
+                face()
+            })
+        </script>
+    </body>
+</html>
