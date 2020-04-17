@@ -31,9 +31,19 @@
                     const canvas = $('#reflay').get(0)
                     faceapi.matchDimensions(canvas, img)
 
-                    const fullFaceDescription = faceapi.resizeResults(fullFaceDescriptions, img)
+                    fullFaceDescriptions = faceapi.resizeResults(fullFaceDescriptions, img)
                     faceapi.draw.drawDetections(canvas, fullFaceDescriptions)
-                    faceapi.draw.drawFaceLandmarks(canvas, fullFaceDescriptions)
+                    // faceapi.draw.drawFaceLandmarks(canvas, fullFaceDescriptions)
+
+
+                    var con = canvas.getContext("2d");
+                    var imgr = new Image()
+                    imgr.src = "/img/glass.png";
+
+                    imgr.onload = () => {      con.drawImage(imgr, dx =  471.27335262298584, dy=366.8473286212282 - 4,dw =101.75236415863037,dh =40);  
+                    console.log(imgr.width)      };
+                    //485.00318117886485,  421.0191735548258
+                    console.log(fullFaceDescriptions[0].landmarks)
 
                     
                     const labels = ['prof', 'rio', 'tokyo', 'berlin', 'nairobi']

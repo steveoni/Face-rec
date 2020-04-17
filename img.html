@@ -1,0 +1,22 @@
+<html>
+    <head>
+        <title>Image Canvas</title>
+    </head>
+    <body>
+
+        <canvas id="draw" width="400" height="400"></canvas>
+        <script>
+
+            var canvas  = document.getElementById("draw");
+
+            var con = canvas.getContext("2d");
+
+            
+            var img = new Image()
+            img.src = "/img/glass.png";
+
+            img.onload = () => {      con.drawImage(img,dx=100,dy=100,dw=50.5,dh=20);
+            console.log(img.width, img.height)        };
+        </script>
+    </body>
+</html>
